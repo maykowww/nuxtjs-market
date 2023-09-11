@@ -123,18 +123,18 @@ const submit = async (values) => {
                 country,
             },
         });
+    } else {
+        await createAddress({
+            body: {
+                userId: user.value.id,
+                name: contactName,
+                address,
+                zipCode,
+                city,
+                country,
+            },
+        });
     }
-
-    await createAddress({
-        body: {
-            userId: user.value.id,
-            name: contactName,
-            address,
-            zipCode,
-            city,
-            country,
-        },
-    });
 
     isWorking = false;
 

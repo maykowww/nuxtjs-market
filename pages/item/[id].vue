@@ -33,10 +33,10 @@
                 </div>
 
                 <div class="md:w-[60%] bg-white p-3 rounded-lg">
-                    <div v-if="product && product.data">
-                        <p class="mb-2">{{ product.data.title }}</p>
+                    <div v-if="product">
+                        <p class="mb-2">{{ product.title }}</p>
                         <p class="font-light text-[12px] mb-2">
-                            {{ product.data.description }}
+                            {{ product.description }}
                         </p>
                     </div>
 
@@ -118,6 +118,7 @@
 
 <script setup>
 import MainLayout from "~/layouts/MainLayout.vue";
+import { getProductById } from "~/services/products";
 import { useUserStore } from "~/stores/user";
 
 const userStore = useUserStore();
@@ -128,18 +129,18 @@ let product = ref(null);
 let currentImage = ref(null);
 
 onBeforeMount(async () => {
-    product.value = await useFetch(
-        `/api/prisma/product-by-id/${route.params.id}`
-    );
+    product.value = await getProductById(route.params.id);
+    userStore.isLoading = false;
 });
 
 watchEffect(() => {
-    if (product.value && product.value.data) {
-        const { url } = product.value.data;
+    if (product && product.value) {
+        const { url } = product.value;
         currentImage.value = url;
         images.value[0] = url;
         userStore.isLoading = false;
     }
+    userStore.isLoading = false;
 });
 
 const isInCart = computed(() => {
@@ -155,8 +156,8 @@ const isInCart = computed(() => {
 });
 
 const priceComputed = computed(() => {
-    if (product.value && product.value.data) {
-        return product.value.data.price / 100;
+    if (product && product.value) {
+        return product.value.price / 100;
     }
 
     return "0.0";
@@ -172,6 +173,6 @@ const images = ref([
 ]);
 
 const addToCart = () => {
-    userStore.cart.push(product.value.data);
+    userStore.cart.push(product.value);
 };
 </script>

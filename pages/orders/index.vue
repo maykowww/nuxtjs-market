@@ -11,8 +11,8 @@
                 </div>
 
                 <div
-                    v-if="orders && orders.value"
-                    v-for="(order, index) in orders.value"
+                    v-if="orders"
+                    v-for="(order, index) in orders"
                     :key="index"
                     class="text-sm pl-[50px]"
                 >
@@ -58,6 +58,7 @@
 definePageMeta({ middleware: "auth" });
 
 import MainLayout from "~/layouts/MainLayout.vue";
+import { getOrderById } from "~/services/orders";
 import { useUserStore } from "~/stores/user";
 const userStore = useUserStore();
 const user = useSupabaseUser();
@@ -65,11 +66,9 @@ const user = useSupabaseUser();
 const orders = ref(null);
 
 onBeforeMount(async () => {
-    const { data } = await useFetch(
-        `/api/prisma/get-orders-by-user/${user.value.id}`
-    );
+    orders.value = await getOrderById(user.value.id);
 
-    orders.value = data;
+    console.log(orders.value);
 
     setTimeout(() => (userStore.isLoading = false), 1000);
 });

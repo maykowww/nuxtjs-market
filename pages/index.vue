@@ -4,11 +4,7 @@
             <div
                 class="grid xl:grid-cols-6 lg:grid-cols-5 md:grid-cols-4 sm:grid-cols-3 grid-cols-2 gap-4"
             >
-                <div
-                    v-if="products"
-                    v-for="product in products.data"
-                    :key="product"
-                >
+                <div v-if="products" v-for="product in products" :key="product">
                     <ProductComponent :product="product" />
                 </div>
             </div>
@@ -18,13 +14,14 @@
 
 <script setup>
 import MainLayout from "~/layouts/MainLayout.vue";
+import { getAllProducts } from "~/services/products";
 import { useUserStore } from "~/stores/user";
 const userStore = useUserStore();
 
 const products = ref(null);
 
 onBeforeMount(async () => {
-    products.value = await useFetch(`/api/prisma/getProducts`);
+    products.value = await getAllProducts();
 
     setTimeout(() => (userStore.isLoading = false), 1000);
 });

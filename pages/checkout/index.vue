@@ -149,6 +149,8 @@ definePageMeta({ middleware: "auth" });
 
 import MainLayout from "~/layouts/MainLayout.vue";
 import { getPaymentIntent } from "~/services/stripe";
+import { getAddressById } from "~/services/addresses";
+import { createOrder } from "~/services/orders";
 import { useUserStore } from "~/stores/user";
 const userStore = useUserStore();
 const user = useSupabaseUser();
@@ -170,11 +172,9 @@ onBeforeMount(async () => {
     total.value = 0.0;
 
     if (user.value) {
-        const { data } = await useFetch(
-            `/api/prisma/get-address-by-user/${user.value.id}`
-        );
+        const response = await getAddressById(user.value.id);
 
-        currentAddress.value = data.value;
+        currentAddress.value = response;
 
         setTimeout(() => (userStore.isLoading = false), 1000);
     }
@@ -252,18 +252,17 @@ const pay = async () => {
         isProcessing.value = false;
         return;
     } else {
-        await createOrder(result.paymentIntent.id);
+        await create(result.paymentIntent.id);
         userStore.cart = [];
         userStore.checkout = [];
         setTimeout(() => navigateTo("/success"), 1000);
     }
 };
 
-const createOrder = async (stripeId) => {
+const create = async (stripeId) => {
     const { name, address, zipcode, city, country } = currentAddress.value;
 
-    await useFetch("/api/prisma/createOrder/", {
-        method: "POST",
+    await createOrder({
         body: {
             userId: user.value.id,
             stripeId,
